@@ -17,7 +17,6 @@ depends.on("PV-Star, PhantomPackets, ArborianQuests, Citizens, GenericsCitizensL
     include.script("global_utils.js");
     include.script("status_tracker.js");
     include.script("questlib.js");
-    include.script("event_names.js");
     include.script("item_hunt_lib.js");
     include.script("citizensUtils.js");
     include.script("dialog.js");

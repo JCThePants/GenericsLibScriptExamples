@@ -1,5 +1,6 @@
 var wizardCouncil = (function () {
 
+    // local array of wizard council NPC's
     var npcInfo = [
         _global.character.WIZARD_COUNCIL_MEMBER_1,
         _global.character.WIZARD_COUNCIL_MEMBER_2,
@@ -10,16 +11,18 @@ var wizardCouncil = (function () {
         _global.character.WIZARD_COUNCIL_MEMBER_7
     ];
 
+    // array of wizard council NPC locations
     var npcLocation = [
-        quests.locations.get("WizardCouncil1"),
-        quests.locations.get("WizardCouncil2"),
-        quests.locations.get("WizardCouncil3"),
-        quests.locations.get("WizardCouncil4"),
-        quests.locations.get("WizardCouncil5"),
-        quests.locations.get("WizardCouncil6"),
-        quests.locations.get("WizardCouncil7")
+        quests.locations.get(_locations.wizardCouncil.NPC_MEMBER_1),
+        quests.locations.get(_locations.wizardCouncil.NPC_MEMBER_2),
+        quests.locations.get(_locations.wizardCouncil.NPC_MEMBER_3),
+        quests.locations.get(_locations.wizardCouncil.NPC_MEMBER_4),
+        quests.locations.get(_locations.wizardCouncil.NPC_MEMBER_5),
+        quests.locations.get(_locations.wizardCouncil.NPC_MEMBER_6),
+        quests.locations.get(_locations.wizardCouncil.NPC_MEMBER_7)
     ];
 
+    // array to track scheduled head nodding tasks
     var nodTasks = [
         null,
         null,
@@ -30,6 +33,7 @@ var wizardCouncil = (function () {
         null
     ];
 
+    // generate a council member NPC
     function generateNPC(info, location) {
         var npc = citizens.createNPC(info.name, info.type);
         npc.setSkinName(info.skin);
@@ -45,9 +49,38 @@ var wizardCouncil = (function () {
     var talkQueue = [];
     var current = null;
     var isInTalkSession = false;
-    var enterLocation = quests.locations.get("WizardCouncilEnter");
-    var exitLocation = quests.locations.get("WizardCouncilExit");
+    var enterLocation = quests.locations.get(_locations.wizardCouncil.ENTER);
+    var exitLocation = quests.locations.get(_locations.wizardCouncil.EXIT);
 
+    /**
+     * Detect player approaching council to speak
+     */
+    quests.regions.onEnter(_regions.wizardCouncil.SPEAK, function (player, region) {
+
+        scheduler.runTaskLater(1, function () {
+            if (current == null && nextTalk() == null) {
+                return;
+            }
+
+            if (current.player.getUniqueId().equals(player.getUniqueId())) {
+                startCurrent();
+            }
+        });
+    });
+
+    /**
+     * Detect player leaving queue waiting room
+     */
+    quests.regions.onLeave(_regions.wizardCouncil.WAITING_ROOM, function (player, region) {
+        var queueSession = unregisterTalk(player);
+
+        if (queueSession) {
+            msg.tell(player, "You have left the queue to see the Council of Wizards.");
+        }
+    });
+
+
+    // simulate head nodding while talking for the specified duration
     function nod(player, memberIndex, durationSeconds) {
 
         var npc = _global.npc["WIZARD_COUNCIL_MEMBER_" + memberIndex];
@@ -76,6 +109,7 @@ var wizardCouncil = (function () {
         }
     }
 
+    // make the npc look at the specified entity
     function look(memberIndex, entity) {
         var npc = _global.npc["WIZARD_COUNCIL_MEMBER_" + memberIndex];
         var lookingTrait = npc.getTrait(citizensUtils.traits.LOOKING);
@@ -90,6 +124,7 @@ var wizardCouncil = (function () {
         }
     }
 
+    // start the current talk session with the council members
     function startCurrent() {
         if (current == null || isInTalkSession)
             return;
@@ -100,6 +135,8 @@ var wizardCouncil = (function () {
 
         var result = talkSession(current.player, function (talk) {
 
+            // run talk session callback and provide methods to create dialog
+            // between the player and council NPC's
             current.callback({
                 member1 : function (readTime, dialog) {
                     talk.npc(readTime, "Council Member", dialog)
@@ -196,6 +233,7 @@ var wizardCouncil = (function () {
 
     }
 
+    // end the current session with the council
     function endSession() {
         current.player.teleport(exitLocation);
         current = null;
@@ -204,6 +242,8 @@ var wizardCouncil = (function () {
         nextTalk();
     }
 
+    // attempt to start a session with the next player in the
+    // queue.
     function nextTalk() {
 
         if (talkQueue.length == 0 || current != null)
@@ -224,6 +264,8 @@ var wizardCouncil = (function () {
         return current;
     }
 
+    // register a talk session to add to the queue, or starts
+    // immediately if no one else is in a talk session with the council or queued
     function registerTalk(player, callback) {
 
         var session = {
@@ -260,6 +302,7 @@ var wizardCouncil = (function () {
         return result;
     }
 
+    // unregister/cancel a pending talk session
     function unregisterTalk(player) {
         for (var i=0; i < talkQueue.length; i++) {
             if (talkQueue[i].player.getUniqueId().equals(player.getUniqueId())) {
@@ -268,27 +311,6 @@ var wizardCouncil = (function () {
         }
         return null;
     }
-
-    quests.regions.onEnter("SoP_WizardCouncilTalk", function (player, region) {
-
-        scheduler.runTaskLater(1, function () {
-            if (current == null && nextTalk() == null) {
-                return;
-            }
-
-            if (current.player.getUniqueId().equals(player.getUniqueId())) {
-                startCurrent();
-            }
-        });
-    });
-
-    quests.regions.onLeave("WizardCouncilWaitingRoom", function (player, region) {
-        var queueSession = unregisterTalk(player);
-
-        if (queueSession) {
-            msg.tell(player, "You have left the queue to see the Council of Wizards.");
-        }
-    });
 
     return {
 

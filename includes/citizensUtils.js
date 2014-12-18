@@ -1,7 +1,4 @@
 importClass(org.bukkit.util.Vector);
-//importClass(net.citizensnpcs.api.ai.flocking.Flocker);
-
-//include.script("global_utils.js");
 
 var citizensUtils = (function () {
 

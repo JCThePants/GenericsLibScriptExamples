@@ -1,5 +1,11 @@
 (function () {
 
+    var _npcLocations = [
+        _locations.research.NPC_RESEARCHER1,
+        _locations.research.NPC_RESEARCHER2,
+        _locations.research.NPC_RESEARCHER3
+    ];
+
     var npc = [
         getResearcherNPC(0),
         getResearcherNPC(1),
@@ -7,21 +13,17 @@
     ];
 
     var sampleLocations = [
-        quests.locations.get("SoP_Research_Lava"),
-        quests.locations.get("SoP_Research_Lava2"),
-        quests.locations.get("SoP_Research_Lava3"),
-        quests.locations.get("SoP_Research_Lava4"),
-        quests.locations.get("SoP_Research_Lava5"),
-        quests.locations.get("SoP_Research_Lava6"),
-        quests.locations.get("SoP_Research_Lava7"),
-        quests.locations.get("SoP_Research_Lava8")
+        quests.locations.get(_locations.research.LAVA_SAMPLE1),
+        quests.locations.get(_locations.research.LAVA_SAMPLE2),
+        quests.locations.get(_locations.research.LAVA_SAMPLE3),
+        quests.locations.get(_locations.research.LAVA_SAMPLE4),
+        quests.locations.get(_locations.research.LAVA_SAMPLE5),
+        quests.locations.get(_locations.research.LAVA_SAMPLE6),
+        quests.locations.get(_locations.research.LAVA_SAMPLE7),
+        quests.locations.get(_locations.research.LAVA_SAMPLE8)
     ];
 
-    var regionNames = {
-        VOLCANO_ENTRANCE_DISCOVERY : "Volcano_Entrance_Discovery"
-    };
-
-    var lavaSample = quests.items.getItem("Lava_Sample");
+    var lavaSample = quests.items.getItem(_itemNames.research.LAVA_SAMPLE);
     var lavaSamples = [];
     var questStatus = new StatusTracker();
 
@@ -38,8 +40,10 @@
         setupSamplePickup(sample, i);
     }
 
-    // Detect player entering volcano entrance discovery region.
-    quests.regions.onEnter(regionNames.VOLCANO_ENTRANCE_DISCOVERY, function (player, region) {
+    /**
+     * Detect player entering volcano entrance discovery region.
+     */
+    quests.regions.onEnter(_regions.research.VOLCANO_ENTRANCE_DISCOVERY, function (player, region) {
 
         // check player is in quest
         var status = questStatus.getStatus(player.getUniqueId());
@@ -61,7 +65,6 @@
                 talk.player(1, "I'll tell the researchers about it when I'm done collecting samples.");
             }
         });
-
     });
 
 
@@ -91,7 +94,6 @@
             }
         });
     }
-
 
     /**
      * Get and setup Researcher NPC

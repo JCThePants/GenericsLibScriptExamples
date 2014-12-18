@@ -1,18 +1,9 @@
 (function () {
 
-    var _regionNames = {
-        ENTRANCE : "Volcano_Entrance_Exterior",
-        ENTRANCE_EXIT : "Volcano_Entrance_Interior",
-        ZOMBIES : "Volcano_Zombies",
-        INSPECT_LARGE_DOOR : "Volcano_InspectLargeDoor"
-    };
-
-    var volcanoArena = pvstar.getArenaByName(_arenaNames.VOLCANO);
-
     /**
      * Enter Volcano arena
      */
-    quests.regions.onEnter(_regionNames.ENTRANCE, function (player, region) {
+    quests.regions.onEnter(_regions.volcano.ENTRANCE, function (player, region) {
 
         if (!isTaskComplete(player, _tasks.teleportation.PICKUP_SPELL))
             return;
@@ -21,11 +12,10 @@
         pvstar.join(volcanoArena, player);
     });
 
-
     /**
      * Exit arena front door
      */
-    quests.regions.onEnter(_regionNames.ENTRANCE_EXIT, function (player, region) {
+    quests.regions.onEnter(_regions.volcano.ENTRANCE_EXIT, function (player, region) {
 
         // for players in the Volcano quest
         if (isCurrentQuest(player, _quests.SOURCE_OF_POWER_1.name)) {
@@ -42,11 +32,10 @@
         pvstar.leave(volcanoArena, player);
     });
 
-
     /**
      * Zombies exclamation
      */
-    quests.regions.onEnter(_regionNames.ZOMBIES, function (player, region) {
+    quests.regions.onEnter(_regions.volcano.ZOMBIES, function (player, region) {
         if (!isCurrentQuest(player, _quests.SOURCE_OF_POWER_1.name) ||
             isTaskComplete(player, _tasks.volcano.ZOMBIES))
             return;
@@ -56,11 +45,10 @@
         playerTalk(player, "Zombies!");
     });
 
-
     /**
      * Inspect large door
      */
-    quests.regions.onEnter(_regionNames.INSPECT_LARGE_DOOR, function (player, region) {
+    quests.regions.onEnter(_regions.volcano.INSPECT_LARGE_DOOR, function (player, region) {
 
         if (!isCurrentQuest(player, _quests.SOURCE_OF_POWER_1.name) ||
             isTaskComplete(player, _tasks.volcano.VISIT_LARGE_DOOR)) {

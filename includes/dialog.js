@@ -1,47 +1,74 @@
-// depends on StatusTracker in status_tracker.js
-// depends on arrayPick in global_utils.js
-// depends on JSMap in global_utils.js
-// depends on talkSession in global_utils.js
+/**
+ * Display a message to a player from an NPC.
+ *
+ * @param player   The player to show the chat message to.
+ * @param npcName  The name of the NPC.
+ * @param message  The message.
+ * @param canSpam  Optional. Specify if spamming allowed. Default is false.
+ */
+function npcTalk(player, npcName, message, canSpam) {
 
-function npcTalk(player, delaySeconds, npcName, message) {
+    message = getNpcPrefix(npcName) + message;
 
-    if (isString(delaySeconds)) {
-        message = npcName;
-        npcName = delaySeconds;
-        delaySeconds = 0;
-    }
-
-    message = "{YELLOW}<{WHITE}" + npcName + "{YELLOW}> {GRAY}" + message;
-
-    if (!delaySeconds) {
-        msg.tellNoSpam(player, 10, message);
+    if (canSpam) {
+        msg.tell(player, message);
     }
     else {
-        scheduler.runTaskLater(delaySeconds * 20, function () {
-            msg.tellNoSpam(player, 10, message);
-        })
+        msg.tellNoSpam(player, 10 * 20, message);
     }
 }
 
-function playerTalk(player, delaySeconds, message) {
+/**
+ * Displays a message to a player in chat that represents the
+ * player speaking to an NPC.
+ *
+ * @param player   The player who is talking (and will see the message).
+ * @param message  The message.
+ * @param canSpam  Optional. Specify if spamming allowed. Default is false.
+ */
+function playerTalk(player, message, canSpam) {
 
-    if (isString(delaySeconds)) {
-        message = delaySeconds;
-        delaySeconds = 0;
-    }
+    message = getPlayerPrefix(player) + message;
 
-    message = "{BLUE}<{WHITE}" + player.getName() + "{BLUE}> {GOLD}" + message;
-
-    if (!delaySeconds) {
-        msg.tellNoSpam(player, 10, message);
+    if (canSpam) {
+        msg.tell(player, message);
     }
     else {
-        scheduler.runTaskLater(delaySeconds * 20, function () {
-            msg.tellNoSpam(player, 10, message);
-        })
+        msg.tellNoSpam(player, 10 * 20, message);
     }
 }
 
+/**
+ * Get the chat prefix for an npc.
+ *
+ * @param npcName  The name of the npc.
+ *
+ * @returns {string}
+ */
+function getNpcPrefix(npcName) {
+    return "{YELLOW}<{WHITE}" + npcName + "{YELLOW}> {GRAY}";
+}
+
+/**
+ * Get the chat prefix for a player speaking to an npc.
+ *
+ * @param player  The player
+ *
+ * @returns {string}
+ */
+function getPlayerPrefix(player) {
+    return "{BLUE}<{WHITE}" + player.getName() + "{BLUE}> {GOLD}";
+}
+
+/**
+ * Start a talk session. Designed to make it easy to script timed dialog and actions.
+ *
+ * @param player        The player the session is for.
+ * @param callback      The callback to run. An object containing utilities is passed into the callback.
+ * @param initialDelay  Optional initial delay before starting.
+ *
+ * @returns {{totalDelay: number, onFinish: Function}}
+ */
 function talkSession(player, callback, initialDelay) {
 
     var totalDelay = (initialDelay || 0) * 20;
@@ -55,6 +82,8 @@ function talkSession(player, callback, initialDelay) {
 
     status.isTalking = true;
 
+    // increment the number of tasks executed and
+    // end session if all tasks completed.
     function incrementExecuted() {
         executedTasks++;
         if (executedTasks >= totalTasks) {
@@ -66,6 +95,7 @@ function talkSession(player, callback, initialDelay) {
         }
     }
 
+    // utility to display timed chat dialog.
     function displayDialog(readTime, dialog) {
         var isFinished = false;
         var isStarted = false;
@@ -124,24 +154,52 @@ function talkSession(player, callback, initialDelay) {
         }
     }
 
+    // execute the provided callback and pass in an object
+    // with utility functions
     callback({
 
+        /**
+         * NPC dialog.
+         *
+         * @param readTime  The amount of time it takes to read the dialog.
+         * @param npcName   The name of the NPC talking.
+         * @param dialog    The dialog to show in chat.
+         *
+         * @returns {{ onStart : Function, onFinish : Function  }}
+         * Object with methods to attach onStart and onFinish callbacks.
+         */
         npc : function (readTime, npcName, dialog) {
 
-            dialog = "{YELLOW}<{WHITE}" + npcName + "{YELLOW}> {GRAY}" + dialog;
+            dialog = getNpcPrefix(npcName) + dialog;
             totalTasks++;
 
             return displayDialog(readTime, dialog);
 
         },
 
+        /**
+         * Player dialog.
+         *
+         * @param readTime  The amount of time it takes to read the dialog.
+         * @param dialog    The dialog to show in chat.
+         *
+         * @returns {{ onStart : Function, onFinish : Function  }}
+         * Object with methods to attach onStart and onFinish callbacks.
+         */
         player : function (readTime, dialog) {
-            dialog = "{BLUE}<{WHITE}" + player.getName() + "{BLUE}> {GOLD}" + dialog;
+            dialog = getPlayerPrefix(player) + dialog;
             totalTasks++;
 
             return displayDialog(readTime, dialog);
         },
 
+        /**
+         * Adds time to the session "Async", that is, the time added does not compete
+         * with the dialog or execution of the session, but simply extends the minimum
+         * time of the session.
+         *
+         * @param time  The time to add
+         */
         padTime : function (time) {
             totalTasks++;
             scheduler.runTaskLater(totalDelay + (time * 20), function () {
@@ -149,6 +207,11 @@ function talkSession(player, callback, initialDelay) {
             });
         },
 
+        /**
+         * Execute a function. Executes a function in sequence "Async".
+         *
+         * @param callback  The parameterless function to execute.
+         */
         execute : function (callback) {
             totalTasks++;
             scheduler.runTaskLater(totalDelay, function () {
@@ -170,12 +233,20 @@ function talkSession(player, callback, initialDelay) {
         }
     };
 
-    // reset total delay in case more talk is added.
+    // reset total delay in case more talk is added
+    // inside a callback function.
     totalDelay = 0;
 
     return result;
 }
 
+/**
+ * Determine if a player is currently in a talk session.
+ *
+ * @param player  The player to check.
+ *
+ * @returns {boolean}
+ */
 function isTalking(player) {
     var sessions = _questLib_internal.talkSessions;
 
@@ -184,6 +255,8 @@ function isTalking(player) {
     return status.isTalking === true;
 }
 
+
+// TODO: Is this really needed
 var _dialog = (function () {
 
     var npcTalkTracker = new StatusTracker();

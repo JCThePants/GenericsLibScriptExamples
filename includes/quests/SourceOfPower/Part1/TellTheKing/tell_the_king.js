@@ -44,14 +44,17 @@
 
     };
 
-    var ordersLocation = quests.locations.get("King_Give");
-    var ordersItemStack = quests.items.getItem("SoP_KingsOrders");
+    var ordersLocation = quests.locations.get(_locations.tellTheKing.KING_GIVE);
+    var ordersItemStack = quests.items.getItem(_itemNames.tellTheKing.KINGS_ORDERS);
     var ordersItem = quests.items.createFloatingItem(ordersItemStack, ordersLocation);
 
     ordersItem.spawn(ordersLocation);
     phantom.entity.addEntity(ordersItem.getEntity());
 
-    events.on("net.citizensnpcs.api.event.NPCRightClickEvent", "HIGHEST", function(event) {
+    /**
+     * Right click any NPC
+     */
+    events.on(_bukkitEvents.NPC_RIGHT_CLICK, "HIGHEST", function(event) {
 
         var player = event.getClicker();
         var npc = event.getNPC();
@@ -67,6 +70,7 @@
 
         // prevent other quest actions
         event.setCancelled(true);
+
         // TODO: need to be able to get script NPC from script
         // TODO: Make sure NPC is a living NPC
 
@@ -88,8 +92,10 @@
         }
     });
 
-// Tell the king
-    citizens.on(_global.npc.KING, _global.npcEvents.RIGHT_CLICK, "NORMAL", function (event) {
+    /**
+     * Right click the King NPC
+     */
+    citizens.on(_global.npc.KING, _npcEvents.RIGHT_CLICK, "NORMAL", function (event) {
 
         var player = event.getClicker();
 
@@ -111,17 +117,11 @@
             talk.player(3, "Sire! I saw zombies behind a door beneath the volcano!");
 
             talk.npc(2, _global.character.KING.name, "WHAT! No. No. No. This can't be.");
-
             talk.npc(2, _global.character.KING.name, "We must seal the door!");
-
             talk.npc(2, _global.character.KING.name, "No wait!");
-
             talk.npc(5, _global.character.KING.name, "If the portal to the other realm is also damaging our realm then sealing the door wont help.");
-
             talk.npc(4, _global.character.KING.name, "This is a magic beyond me. Let the Council of Wizards decide what to do.");
-
             talk.npc(1, _global.character.KING.name, "{GREEN}You will take these orders to the council.");
-
             talk.npc(1, _global.character.KING.name, "Go. QUICKLY!");
 
         }).onFinish(function () {
@@ -132,6 +132,9 @@
 
     });
 
+    /**
+     * Detect pickup the Kings orders.
+     */
     quests.items.onPickup(ordersItem, function (player, item, isCancelled) {
 
         if (!isInTask(player))
@@ -155,7 +158,9 @@
         phantom.entity.removeViewer(player, ordersItem.getEntity());
     });
 
+    // Util: Determine if the player is currently in the "Tell The King" task.
     function isInTask(player) {
+
         // make sure the player is in the source of power quest
         if (!isCurrentQuest(player, _quests.SOURCE_OF_POWER_1.name)) {
             return false;

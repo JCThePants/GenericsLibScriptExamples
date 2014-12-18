@@ -1,16 +1,14 @@
-
 (function () {
 
-    var tpWizardLocation = quests.locations.get("SoP_TPWizard");
-    var spellLocation = quests.locations.get("SoP_TPWizard_Spell");
-    var spellItemStack = quests.items.getItem("SoP_TPWizard_Spell");
+    var tpWizardLocation = quests.locations.get(_locations.teleportation.NPC_TELEPORT_WIZARD);
+    var spellLocation = quests.locations.get(_locations.teleportation.SPELL);
+    var spellItemStack = quests.items.getItem(_itemNames.teleportation.SPELL);
     var spellItem = quests.items.createFloatingItem(spellItemStack, spellLocation);
     spellItem.spawn();
 
     phantom.entity.addEntity(spellItem.getEntity());
 
     var npc = citizens.createNPC(_global.character.TELEPORT_WIZ.name, _global.character.TELEPORT_WIZ.type);
-
     var clickStatus = new StatusTracker();
 
     var lookingTrait = npc.addTrait(citizensUtils.traits.LOOKING);
@@ -18,10 +16,11 @@
     lookingTrait.setEnabled(true);
 
     npc.setSkinName(_global.character.TELEPORT_WIZ.skin);
-
     npc.spawn(tpWizardLocation);
 
-    // Setup NPC RIGHT CLICK
+    /**
+     * Right Click Teleport Wizard NPC
+     */
     citizens.on(npc, _global.npcEvents.RIGHT_CLICK, "NORMAL", function (event) {
         var player = event.getClicker();
 
@@ -34,16 +33,19 @@
             !isTaskComplete(player, _tasks.research.VOLCANO_ENTRANCE_DISCOVERY)) {
 
             npcTalk(player, _global.character.TELEPORT_WIZ.name, "GO AWAY!");
-
         }
         else {
             // player must click twice.
             var status = clickStatus.addStatus(player.getUniqueId());
             if (status.hasRejectedPlayer && !status.hasGivenSpell) {
 
-                playerTalk(player, "Im sorry to bother you but I found a door...");
+                talkSession(player, function (talk) {
 
-                npcTalk(player, 1, "Teleport Wiz", "You need a teleport spell. Take the one behind you and GO AWAY!");
+                    talk.player(2, "Im sorry to bother you but I found a door...");
+
+                    talk.npc(1, "Teleport Wiz", "You need a teleport spell. Take the one behind you and GO AWAY!");
+                });
+
                 status.hasGivenSpell = true;
                 completeTask(player, _tasks.teleportation.TALK_TO_WIZARD);
             }
@@ -58,6 +60,9 @@
         }
     });
 
+    /**
+     * Detect player pickup teleport spell.
+     */
     quests.items.onPickup(spellItem, function (player, item, isCancelled) {
 
         if (!isTaskComplete(player, _tasks.teleportation.TALK_TO_WIZARD) ||
