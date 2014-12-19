@@ -13,7 +13,8 @@ var citizensUtils = (function () {
             PROTECT_PASSENGER : "com.jcwhatever.bukkit.generic.citizens.traits.ProtectedPassengerTrait",
             LOOKING : "com.jcwhatever.bukkit.generic.citizens.traits.LookingTrait",
             UNBREAKING_ARMOR : "com.jcwhatever.bukkit.generic.citizens.traits.UnbreakableArmorTrait",
-            UNBREAKING_WEAPONS : "com.jcwhatever.bukkit.generic.citizens.traits.UnbreakableWeaponsTrait"
+            UNBREAKING_WEAPONS : "com.jcwhatever.bukkit.generic.citizens.traits.UnbreakableWeaponsTrait",
+            SCRIPTED_WAYPOINTS : "com.jcwhatever.bukkit.generic.citizens.traits.SimpleWaypointsTrait"
         },
 
         viewMode : {

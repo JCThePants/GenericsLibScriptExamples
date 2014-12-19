@@ -6,11 +6,21 @@ var _quests = {
     SOURCE_OF_POWER_2 : {
         name: "SourceOfPower2",
         display: "Source of Power Part 2"
+    },
+    SOURCE_OF_POWER_3 : {
+        name: "SourceOfPower3",
+        display: "Source of Power Part 3"
     }
 };
 
 var _arenaNames = {
-    VOLCANO : "Volcano"
+    VOLCANO : "Volcano",
+    WIZARD_FOREST : "WizardForest",
+    MAUSOLEUM : "Mausoleum",
+    CRYPTS : "Crypts",
+    SECRET_LIBRARY : "SecretLibrary",
+    CAVERNS : "Caverns",
+    POWER_CORE: "PowerCore"
 };
 
 /**
@@ -68,7 +78,8 @@ var _tasks = {
     },
 
     wizardCouncil : {
-        ACCEPT_PART2 : [_quests.SOURCE_OF_POWER_2.name, "WizardCouncil", "AcceptPart2"]
+        ACCEPT_PART2 : [_quests.SOURCE_OF_POWER_2.name, "WizardCouncil", "AcceptPart2"],
+        ACCEPT_PART3 : [_quests.SOURCE_OF_POWER_3.name, "WizardCouncil", "AcceptPart3"]
     },
 
     wizardForest : {
@@ -95,8 +106,13 @@ var _tasks = {
         VISIT_EXIT : [_quests.SOURCE_OF_POWER_2.name, "Crypts", "VisitExit"]
     },
 
+    secretLibrary : {
+        GET_BOOK : [_quests.SOURCE_OF_POWER_2.name, "SecretLibrary", "GetBook"],
+        TALK_TO_COUNCIL : [_quests.SOURCE_OF_POWER_2.name, "SecretLibrary", "TalkToCouncil"]
+    },
+
     caverns : {
-        EXIT_OPENED : [_quests.SOURCE_OF_POWER_2.name, "Caverns", "ExitOpened"]
+        EXIT_OPENED : [_quests.SOURCE_OF_POWER_3.name, "Caverns", "ExitOpened"]
     }
 };
 
@@ -118,11 +134,16 @@ var _itemNames = {
     },
 
     wizardForest : {
-        SOUL_KEY: "WizardForest_Key"
+        SOUL_KEY: "WizardForest_Key",
+        LOG_BOOK : "WizardForest_Book"
     },
 
     crypts : {
         SOUL_KEY : "Crypts_Key"
+    },
+
+    secretLibrary : {
+        BOOK : "SecretLibrary_Book"
     },
 
     caverns : {
@@ -216,11 +237,19 @@ var _locations = {
         KING_GIVE : "King_Give"
     },
 
+    wizardForest : {
+        LOG_BOOK : "WizardForest_Book"
+    },
+
     // crypts arena
     crypts : {
         ENTRANCE :"Crypts_Entrance",
         ENTRANCE_BUFFER : "Crypts_Buffer",
         SOUL_KEY_BASE_NAME : "Crypts_Key"
+    },
+
+    secretLibrary : {
+        BOOK_BASE_NAME : "SecretLibrary_Book"
     },
 
     // caverns arena

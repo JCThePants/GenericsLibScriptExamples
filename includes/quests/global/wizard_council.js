@@ -52,6 +52,10 @@ var wizardCouncil = (function () {
     var enterLocation = quests.locations.get(_locations.wizardCouncil.ENTER);
     var exitLocation = quests.locations.get(_locations.wizardCouncil.EXIT);
 
+
+    var lookingTrait = _global.npc.WIZARD_COUNCIL_MEMBER_7.getTrait(citizensUtils.traits.LOOKING);
+    lookingTrait.setEnabled(false);
+
     /**
      * Detect player approaching council to speak
      */
@@ -84,6 +88,11 @@ var wizardCouncil = (function () {
     function nod(player, memberIndex, durationSeconds) {
 
         var npc = _global.npc["WIZARD_COUNCIL_MEMBER_" + memberIndex];
+
+        if (npc.getNavigator().isNavigating()) {
+            return;
+        }
+
         var lookingTrait = npc.getTrait(citizensUtils.traits.LOOKING);
 
         if (nodTasks[memberIndex - 1] != null) {
@@ -113,6 +122,10 @@ var wizardCouncil = (function () {
     function look(memberIndex, entity) {
         var npc = _global.npc["WIZARD_COUNCIL_MEMBER_" + memberIndex];
         var lookingTrait = npc.getTrait(citizensUtils.traits.LOOKING);
+
+        if (npc.getNavigator().isNavigating()) {
+            return;
+        }
 
         if (entity == null) {
             lookingTrait.setEnabled(false);

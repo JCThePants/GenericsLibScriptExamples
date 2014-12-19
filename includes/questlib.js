@@ -146,6 +146,30 @@ function clearTask(player, questName, taskName, subTaskName) {
     quests.flags.clear(player, questName, name);
 }
 
+function takeItem(player, itemName, qty) {
+    qty = qty || 255;
+
+    var itemStack = quests.items.getItem(itemName);
+    inventory.remove(player.getInventory(), itemStack, inventory.getDefaultComparer(), 255);
+}
+
+/**
+ * Teleport a player to an ArborianQuest location.
+ *
+ * @param player        The player to teleport
+ * @param locationName  The name of the ArborianQuest location.
+ */
+function questTeleport(player, locationName) {
+    var location = quests.locations.get(locationName);
+    if (location == null) {
+        msg.debug("Failed to find location: " + locationName);
+        return;
+    }
+
+    player.teleport(location);
+}
+
+
 function failedToFindLocation(locationName) {
     msg.debug("Failed to find quest location: " + locationName);
 }

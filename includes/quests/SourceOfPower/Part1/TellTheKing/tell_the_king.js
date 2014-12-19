@@ -44,6 +44,11 @@
 
     };
 
+    var responder = {
+        tellKing : new DialogTracker(responses.npcs.tellKing),
+        findTheCouncil : new DialogTracker(responses.npcs.findTheCouncil)
+    };
+
     var ordersLocation = quests.locations.get(_locations.tellTheKing.KING_GIVE);
     var ordersItemStack = quests.items.getItem(_itemNames.tellTheKing.KINGS_ORDERS);
     var ordersItem = quests.items.createFloatingItem(ordersItemStack, ordersLocation);
@@ -79,7 +84,7 @@
 
             playerTalk(player, "I saw zombies under the volcano!");
 
-            _dialog.npcRespondOnce(npc, player, responses.npcs.tellKing);
+            responder.tellKing.respondOnce(player, npc);
 
             completeTask(player, _tasks.tellTheKing.TELL_SOMEONE);
         }
@@ -88,7 +93,7 @@
 
             playerTalk(player, "I need to get these orders to the Council of Wizards.");
 
-            _dialog.npcRespondOnce(npc, player, responses.npcs.findTheCouncil);
+            responder.findTheCouncil.respondOnce(player, npc);
         }
     });
 
@@ -127,7 +132,8 @@
         }).onFinish(function () {
             phantom.entity.addViewer(player, ordersItem.getEntity());
             completeTask(player, _tasks.tellTheKing.TELL_THE_KING);
-            _dialog.clearResponses(player);
+            responder.findTheCouncil.clear(player);
+            responder.tellKing.clear(player);
         });
 
     });

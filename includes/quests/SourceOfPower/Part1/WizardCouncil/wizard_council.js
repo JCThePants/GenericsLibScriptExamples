@@ -47,7 +47,7 @@
 
             talk.playerLook();
 
-            talk.padTime(30);
+            talk.padTime(30); // give time for player to accept the next quest
 
             talk.execute(function () {
 

@@ -255,11 +255,35 @@ function isTalking(player) {
     return status.isTalking === true;
 }
 
-
-// TODO: Is this really needed
-var _dialog = (function () {
+/**
+ * Plays back random responses and tracks which npc used which response.
+ *
+ * @param responses  An array of responses
+ * @constructor
+ */
+function DialogTracker (responses) {
 
     var npcTalkTracker = new StatusTracker();
+
+    this.respond = function (player, npc) {
+        var dialog = arrayPick(responses);
+
+        showResponse(npc, player, dialog);
+    };
+
+    this.respondOnce = function (player, npc) {
+        var dialog = getNPCDialog(npc, player, responses);
+
+        showResponse(npc, player, dialog);
+    };
+
+    this.clear = function (player) {
+        npcTalkTracker.removeStatus(player);
+    };
+
+    this.clearAll = function() {
+        npcTalkTracker = new StatusTracker();
+    };
 
     function getNPCDialog(npc, player, responses) {
         var status = npcTalkTracker.addStatus(player.getUniqueId());
@@ -296,27 +320,8 @@ var _dialog = (function () {
             }, 2);
         }
     }
+}
 
-    return {
-
-        npcRespondOnce : function (npc, player, responses) {
-            var dialog = getNPCDialog(npc, player, responses);
-
-            showResponse(npc, player, dialog);
-        },
-
-        npcRespond : function (npc, player, responses) {
-            var dialog = arrayPick(responses);
-
-            showResponse(npc, player, dialog);
-        },
-
-        clearResponses : function (player) {
-            npcTalkTracker.removeStatus(player);
-        }
-
-    };
-}());
 
 
 
