@@ -1,13 +1,13 @@
 
-depends.on("PV-Star, PhantomPackets, ArborianQuests, Citizens, GenericsCitizensLib", function() {
+depends.on("PV-Star, PhantomPackets, ArborianQuests, Citizens, NucleusCitizens", function() {
 
     include.api("PhantomPackets", "phantom", "phantom");
     include.api("ArborianQuests", "quests", "quests");
     include.api("PV-Star", "pvstar", "pvstar");
     include.api("PV-Star", "pvSubRegions", "pvSubRegions");
-    include.api("GenericsCitizensLib", "genericsCitizens", "genericsCitizens");
+    include.api("NucleusCitizens", "nucleusCitizens", "nCitizens");
 
-    citizens = genericsCitizens.createTransient();
+    citizens = nCitizens.createTransient();
 
     defaultComparer = inventory.getDefaultComparer();
 

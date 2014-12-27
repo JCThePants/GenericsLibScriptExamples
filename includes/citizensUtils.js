@@ -5,21 +5,37 @@ var citizensUtils = (function () {
     var _self = {
 
         traits : {
-            AGGRESSIVE : "com.jcwhatever.bukkit.generic.citizens.traits.AggressiveTrait",
-            ARCHER : "com.jcwhatever.bukkit.generic.citizens.traits.ArcherTrait",
-            HORSE_RIDER : "com.jcwhatever.bukkit.generic.citizens.traits.HorseRiderTrait",
-            LIVING_ENTITY : "com.jcwhatever.bukkit.generic.citizens.traits.ScriptedLivingEntityTrait",
-            NO_DROPS : "com.jcwhatever.bukkit.generic.citizens.traits.NoDropsTrait",
-            PROTECT_PASSENGER : "com.jcwhatever.bukkit.generic.citizens.traits.ProtectedPassengerTrait",
-            LOOKING : "com.jcwhatever.bukkit.generic.citizens.traits.LookingTrait",
-            UNBREAKING_ARMOR : "com.jcwhatever.bukkit.generic.citizens.traits.UnbreakableArmorTrait",
-            UNBREAKING_WEAPONS : "com.jcwhatever.bukkit.generic.citizens.traits.UnbreakableWeaponsTrait",
-            SCRIPTED_WAYPOINTS : "com.jcwhatever.bukkit.generic.citizens.traits.SimpleWaypointsTrait"
+            AGGRESSIVE : "com.jcwhatever.nucleus.citizens.traits.AggressiveTrait",
+            ARCHER : "com.jcwhatever.nucleus.citizens.traits.ArcherTrait",
+            HORSE_RIDER : "com.jcwhatever.nucleus.citizens.traits.HorseRiderTrait",
+            LIVING_ENTITY : "com.jcwhatever.nucleus.citizens.traits.ScriptedLivingEntityTrait",
+            NO_DROPS : "com.jcwhatever.nucleus.citizens.traits.NoDropsTrait",
+            PROTECT_PASSENGER : "com.jcwhatever.nucleus.citizens.traits.ProtectedPassengerTrait",
+            LOOKING : "com.jcwhatever.nucleus.citizens.traits.LookingTrait",
+            UNBREAKING_ARMOR : "com.jcwhatever.nucleus.citizens.traits.UnbreakableArmorTrait",
+            UNBREAKING_WEAPONS : "com.jcwhatever.nucleus.citizens.traits.UnbreakableWeaponsTrait",
+            SCRIPTED_WAYPOINTS : "com.jcwhatever.nucleus.citizens.traits.SimpleWaypointsTrait"
         },
 
         viewMode : {
-            WHITELIST : com.jcwhatever.bukkit.generic.mixins.IViewable.ViewPolicy.WHITELIST,
-            BLACKLIST : com.jcwhatever.bukkit.generic.mixins.IViewable.ViewPolicy.BLACKLIST
+            WHITELIST : com.jcwhatever.nucleus.mixins.IViewable.ViewPolicy.WHITELIST,
+            BLACKLIST : com.jcwhatever.nucleus.mixins.IViewable.ViewPolicy.BLACKLIST
+        },
+
+        createNPC : function (npcInfo) {
+
+            var npc = citizens.createNPC(npcInfo.name, npcInfo.type);
+
+            if (npcInfo.skin) {
+                npc.setSkinName(npcInfo.skin);
+            }
+
+            if (npcInfo.kit) {
+                var kit = citizens.getNPCKit(npcInfo.kit);
+                kit.apply(npc);
+            }
+
+            return npc;
         },
 
         cancelNav : function (npc) {

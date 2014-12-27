@@ -34,11 +34,36 @@ var _pvEvents = {
     PLAYER_ADDED : "com.jcwhatever.bukkit.pvs.api.events.players.PlayerAddedEvent"
 };
 
+var _pvSpawns = {
+
+    powerCore : {
+        // initial spawns
+        BOSS1: "Boss1",
+        BOSS7: "Boss7",
+
+        // other spawns
+        BOSS2: "Boss2",
+        BOSS3: "Boss3",
+        BOSS4: "Boss4",
+        BOSS5: "Boss5",
+        BOSS6: "Boss6"
+    }
+};
+
+var _pvSubRegions = {
+
+    powerCore : {
+        GRINDER : "grinder"
+    }
+
+};
+
 /**
  * Bukkit based events
  */
 var _bukkitEvents = {
     PLAYER_INTERACT: "org.bukkit.event.player.PlayerInteractEvent",
+    BLOCK_PLACE : "org.bukkit.event.block.BlockPlaceEvent",
     NPC_RIGHT_CLICK : "net.citizensnpcs.api.event.NPCRightClickEvent"
 };
 
@@ -46,7 +71,13 @@ var _bukkitEvents = {
  * GenericsCitizensLib events
  */
 var _npcEvents = {
-    RIGHT_CLICK : "com.jcwhatever.bukkit.generic.citizens.events.NPCRightClickEvent"
+    RIGHT_CLICK : "com.jcwhatever.nucleus.citizens.events.NPCRightClickEvent"
+};
+
+var _material = {
+    AIR : org.bukkit.Material.AIR,
+    OBSIDIAN : org.bukkit.Material.OBSIDIAN,
+    SADDLE : org.bukkit.Material.SADDLE
 };
 
 /**
@@ -92,6 +123,7 @@ var _tasks = {
         KEY_NOT_WORKING : [_quests.SOURCE_OF_POWER_2.name, "WizardForest", "KeyNotWorking"],
         WONDER : [_quests.SOURCE_OF_POWER_2.name, "WizardForest", "Wonder"],
         INNER_DOOR_OPENED : [_quests.SOURCE_OF_POWER_2.name, "WizardForest", "InnerDoorOpened"],
+        EXIT_DOOR_OPENED : [_quests.SOURCE_OF_POWER_3.name, "WizardForest", "ExitDoorOpened"],
 
         TALK_TO_COUNCIL : [_quests.SOURCE_OF_POWER_2.name, "WizardForest", "TalkToCouncil"]
     },
@@ -112,7 +144,16 @@ var _tasks = {
     },
 
     caverns : {
+        PICKUP_KEY : [_quests.SOURCE_OF_POWER_3.name, "Caverns", "PickupKey"],
         EXIT_OPENED : [_quests.SOURCE_OF_POWER_3.name, "Caverns", "ExitOpened"]
+    }
+};
+
+var _sessionTasks = {
+    powerCore : {
+        BOSS_INTRO : "QUEST_SourceOfPower_PowerCore_BossIntro",
+        SECOND_DOOR_OPENED : "QUEST_SourceOfPower_PowerCore_SecondDoorOpened",
+        REPAIR_SWORD : "QUEST_SourceOfPower_PowerCore_RepairSword"
     }
 };
 
@@ -188,6 +229,14 @@ var _regions = {
 
     caverns : {
         CAVERN_EXIT : "AncientCavern_Exit"
+    },
+
+    powerCore: {
+        ENTRANCE : "PowerCore_Entrance",
+        BOSS_INTRO_1 : "PowerCore_BossIntro1",
+        BOSS_INTRO_2 : "PowerCore_BossIntro2",
+        SECOND_DOOR : "PowerCore_SecondDoor",
+        THIRD_DOOR : "PowerCore_ThirdDoor"
     }
 };
 
@@ -255,6 +304,17 @@ var _locations = {
     // caverns arena
     caverns : {
         SOUL_KEY : "Caverns_Soul_Key"
+    },
+
+    powerCore: {
+        ENTRANCE : "PowerCore_Entrance",
+        INTRO_BOSS1 : "PowerCore_BossIntro1",
+        INTRO_BOSS2 : "PowerCore_BossIntro2",
+        THIRD_DOOR_DEST : "PowerCore_ThirdDoor",
+        SWORD_REPAIR_1 : "PowerCore_SwordSlot1",
+        SWORD_REPAIR_2 : "PowerCore_SwordSlot2",
+        SWORD_REPAIR_3 : "PowerCore_SwordSlot3",
+        SWORD_REPAIR_4 : "PowerCore_SwordSlot4"
     }
 };
 
@@ -271,9 +331,34 @@ var _phantomRegions = {
 
     caverns : {
         CAVERN_EXIT : "Caverns_Exit_Door"
-    }
+    },
 
+    powerCore: {
+        SECOND_DOOR : "PowerCore_SecondDoor"
+    }
 };
+
+
+var _npcInfo = {
+    powerCore : {
+
+        BOSS : {
+            name : "Evil Wizard",
+            type : "PLAYER",
+            skin : "JCThePants",
+            kit : "EvilWizard",
+            health: 60
+        },
+
+        BOSS_HORSE : {
+            name : "Skippy",
+            type : "HORSE",
+            kit : "EvilWizardHorse",
+            health : 100
+        }
+    }
+};
+
 
 
 var _global = {
@@ -346,6 +431,6 @@ var _global = {
     },
 
     npcEvents : {
-        RIGHT_CLICK : "com.jcwhatever.bukkit.generic.citizens.events.NPCRightClickEvent"
+        RIGHT_CLICK : "com.jcwhatever.nucleus.citizens.events.NPCRightClickEvent"
     }
 };
