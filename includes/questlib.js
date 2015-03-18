@@ -1,28 +1,92 @@
 var _questLib_internal = {
     onScriptReset : [],
-    talkSessions : new StatusTracker()
+    talkSessions : new StatusTracker(),
+
+    getQuestPath : function (quest) {
+        if (isArray(quest)) {
+
+            var path = "";
+            for (var i=0; i < quest.length; i++) {
+                path += quest[i];
+                if (i < quest.length - 1)
+                    path += '.';
+            }
+            return path;
+        }
+        return quest;
+    },
+
+    getTaskName : function (task) {
+        if (isArray(task)) {
+            var taskName = "";
+            for (var i=0; i < task.length; i++) {
+                taskName += task[i];
+                if (i < task.length - 1)
+                    taskName += '_';
+            }
+            return taskName;
+        }
+        return task;
+    },
+
+    getTaskObject : function (questPath, taskName) {
+
+        var path;
+        var task;
+
+        if (!questPath)
+            throw "Invalid quest path";
+
+        if (!isArray(questPath) && !isString(questPath)) {
+
+            path = _questLib_internal.getQuestPath(questPath.path);
+            task = _questLib_internal.getTaskName(questPath.task);
+        }
+        else if (isArray(questPath)) {
+            path = _questLib_internal.getQuestPath(questPath);
+        }
+        else {
+            path = questPath;
+        }
+
+        if (taskName) {
+            task = _questLib_internal.getTaskName(taskName);
+        }
+
+        return {
+            questPath : path,
+            taskName : task
+        }
+    }
 };
 
 /**
  * Determine if the specified quest has been accepted by a player.
  *
- * @param player     The player to check.
- * @param questName  The name of the quest.
+ * @param player  The player to check.
+ * @param questPath   The name of the quest or quest array.
+ *
  * @returns {Boolean}  True if the quest is accepted.
  */
-function isQuestAccepted(player, questName) {
-    return quests.isInQuest(player, questName);
+function isQuestAccepted(player, questPath) {
+
+    var path = _questLib_internal.getQuestPath(questPath);
+
+    return quests.isInQuest(player, path);
 }
 
 /**
  * Query a player to accept a quest.
  *
  * @param player     The player to query.
- * @param questName  The name of the quest.
+ * @param questPath      The name of the quest or quest array.
  * @param callback   The callback to run if the quest is accepted.
  */
-function queryQuest(player, questName, callback) {
-    quests.queryQuest(player, questName, function () {
+function queryQuest(player, questPath, callback) {
+
+    var path = _questLib_internal.getQuestPath(questPath);
+
+    quests.queryQuest(player, path, function () {
 
         if (callback)
             callback();
@@ -32,118 +96,138 @@ function queryQuest(player, questName, callback) {
 /**
  * Join a player to a quest.
  *
- * @param player     The player.
- * @param questName  The name of the quest.
+ * @param player  The player.
+ * @param questPath   The name of the quest or quest array.
  *
  * @returns {boolean}  True if the player joined the quest.
  */
-function joinQuest(player, questName) {
-    return quests.joinQuest(player, questName);
+function joinQuest(player, questPath) {
+
+    var path = _questLib_internal.getQuestPath(questPath);
+
+    return quests.joinQuest(player, path);
 }
 
 /**
  * Determine if the player has completed a quest.
  *
- * @param player     The player.
- * @param questName  The name of the quest.
+ * @param player  The player.
+ * @param questPath   The name of the quest or quest array.
  *
  * @returns {Boolean}  True if the player has completed the quest.
  */
-function isQuestComplete(player, questName) {
-    return quests.hasCompleted(player, questName);
+function isQuestComplete(player, questPath) {
+
+    var path = _questLib_internal.getQuestPath(questPath);
+
+    return quests.hasCompleted(player, path);
 }
 
 /**
  * Determine if the player is currently in quest.
  *
- * @param player     The player.
- * @param questName  The name of the quest.
+ * @param player  The player.
+ * @param questPath   The name of the quest or quest array.
  *
  * @returns {Boolean}  True if the player in quest.
  */
-function isCurrentQuest(player, questName) {
-    return isQuestAccepted(player, questName) &&
-        !isQuestComplete(player, questName);
+function isCurrentQuest(player, questPath) {
+    return isQuestAccepted(player, questPath) &&
+        !isQuestComplete(player, questPath);
 }
 
 /**
  * Set the players quest status to completed.
  *
  * @param player     The player.
- * @param questName  The name of the quest.
+ * @param questPath  The name of the quest or quest array.
  *
  * @returns {Boolean}  True if the quest completed.
  */
-function completeQuest(player, questName) {
-    return quests.complete(player, questName);
+function completeQuest(player, questPath) {
+
+    var path = _questLib_internal.getQuestPath(questPath);
+
+    return quests.complete(player, path);
+}
+
+/**
+ * Get the players current objective for the specified quest.
+ *
+ * @param player     The player to check.
+ * @param questPath  The path of the quest to check.
+ */
+function getObjective(player, questPath) {
+
+    var path = _questLib_internal.getQuestPath(questPath);
+
+    return quests.getObjective(player, path);
+}
+
+/**
+ * Set the players current objective for the specified quest.
+ *
+ * @param player     The player to set the objective for.
+ * @param questPath  The path of the quest to set the objective for.
+ * @param key        The objective text key.
+ * @param text       The objective text.
+ */
+function setObjective(player, questPath, key, text) {
+
+    var path = _questLib_internal.getQuestPath(questPath);
+
+    quests.setObjective(player, path, key, text);
+}
+
+/**
+ * Clear a players current objective for the specified quest.
+ *
+ * @param player     The player to clear the objective for.
+ * @param questPath  The path of the quest to clear the objective from.
+ */
+function clearObjective(player, questPath) {
+
+    var path = _questLib_internal.getQuestPath(questPath);
+
+    quests.clearObjective(player, path);
 }
 
 /**
  * Determine if the player has completed a task.
  *
- * @param player       The player.
- * @param questName    The name of the quest.
- * @param taskName     The name of the task.
- * @param subTaskName  Optional. A sub task name.
+ * @param player      The player.
+ * @param questPath   The name of the quest.
+ * @param taskName    The name of the task.
  *
  * @returns {Boolean}  True if the task is complete.
  */
-function isTaskComplete(player, questName, taskName, subTaskName) {
-    if(Object.prototype.toString.call( questName ) === '[object Array]' ) {
-        taskName = questName[1];
-        subTaskName = questName[2];
-        questName = questName[0];
-    }
-
-    var name = taskName;
-    if (subTaskName) {
-        name += "_" + subTaskName;
-    }
-    return quests.flags.has(player, questName, name);
+function isTaskComplete(player, questPath, taskName) {
+    var info = _questLib_internal.getTaskObject(questPath, taskName);
+    return quests.flags.has(player, info.questPath, info.taskName);
 }
 
 /**
  * Mark a task as completed for the specified player.
  *
- * @param player       The player.
- * @param questName    The name of the quest.
- * @param taskName     The name of the task.
- * @param subTaskName  Optional. A sub task name.
+ * @param player     The player.
+ * @param questPath  The name of the quest.
+ * @param taskName   The name of the task.
  */
-function completeTask(player, questName, taskName, subTaskName) {
-    if(Object.prototype.toString.call( questName ) === '[object Array]' ) {
-        taskName = questName[1];
-        subTaskName = questName[2];
-        questName = questName[0];
-    }
-
-    var name = taskName;
-    if (subTaskName) {
-        name += "_" + subTaskName;
-    }
-    quests.flags.set(player, questName, name);
+function completeTask(player, questPath, taskName) {
+    var info = _questLib_internal.getTaskObject(questPath, taskName);
+    quests.flags.set(player, info.questPath, info.taskName);
 }
 
 /**
  * Mark a task as incomplete for the specified player.
  *
- * @param player       The player.
- * @param questName    The name of the quest.
- * @param taskName     The name of the task.
- * @param subTaskName  Optional. A sub task name.
+ * @param player     The player.
+ * @param questPath  The name of the quest.
+ * @param taskName   The name of the task.
  */
-function clearTask(player, questName, taskName, subTaskName) {
-    if(Object.prototype.toString.call( questName ) === '[object Array]' ) {
-        taskName = questName[1];
-        subTaskName = questName[2];
-        questName = questName[0];
-    }
-
-    var name = taskName;
-    if (subTaskName) {
-        name += "_" + subTaskName;
-    }
-    quests.flags.clear(player, questName, name);
+function clearTask(player, questPath, taskName) {
+    var info = _questLib_internal.getTaskObject(questPath, taskName);
+    quests.flags.clear(player, info.questPath, info.taskName);
 }
 
 function takeItem(player, itemName, qty) {
@@ -168,7 +252,6 @@ function questTeleport(player, locationName) {
 
     player.teleport(location);
 }
-
 
 function failedToFindLocation(locationName) {
     msg.debug("Failed to find quest location: " + locationName);

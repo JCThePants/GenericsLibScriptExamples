@@ -4,7 +4,9 @@
     /*
      * Quest
      */
-    quest = quests.create(_quests.SOURCE_OF_POWER_1.name, _quests.SOURCE_OF_POWER_1.display);
+    quest = quests.createSub(_quests.SOURCE_OF_POWER.name,
+                             _quests.SOURCE_OF_POWER.PART_1.name,
+                             _quests.SOURCE_OF_POWER.PART_1.display);
 
     // Research (Spawn)
     include.script("quests/SourceOfPower/Part1/Research/research.js");

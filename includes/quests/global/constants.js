@@ -1,15 +1,26 @@
+
+
 var _quests = {
-    SOURCE_OF_POWER_1 : {
-        name: "SourceOfPower1",
-        display: "Source of Power Part 1"
-    },
-    SOURCE_OF_POWER_2 : {
-        name: "SourceOfPower2",
-        display: "Source of Power Part 2"
-    },
-    SOURCE_OF_POWER_3 : {
-        name: "SourceOfPower3",
-        display: "Source of Power Part 3"
+    SOURCE_OF_POWER : {
+        name: "SourceOfPower",
+        display: "Source of Power",
+        quest : "SourceOfPower",
+
+        PART_1 : {
+            name: "Part1",
+            display: "Source of Power Part 1",
+            quest : "SourceOfPower.Part1"
+        },
+        PART_2 : {
+            name: "Part2",
+            display: "Source of Power Part 2",
+            quest : "SourceOfPower.Part2"
+        },
+        PART_3 : {
+            name: "Part3",
+            display: "Source of Power Part 3",
+            quest : "SourceOfPower.Part3"
+        }
     }
 };
 
@@ -21,6 +32,15 @@ var _arenaNames = {
     SECRET_LIBRARY : "SecretLibrary",
     CAVERNS : "Caverns",
     POWER_CORE: "PowerCore"
+};
+
+var _titles = {
+    SOURCE_OF_POWER_1_ACCEPT : titles.create("{BLUE}Quest Accepted", "Source of Power Part 1", 10, 40, 20),
+    SOURCE_OF_POWER_1_COMPLETE : titles.create("{GREEN}Part 1 Complete", "Source of Power Part 1", 10, 20, 20),
+    SOURCE_OF_POWER_2_ACCEPT : titles.create("{BLUE}Quest Accepted", "Source of Power Part 2", 10, 40, 20),
+    SOURCE_OF_POWER_2_COMPLETE : titles.create("{GREEN}Part 2 Complete", "Source of Power Part 2", 10, 20, 20),
+    SOURCE_OF_POWER_3_ACCEPT : titles.create("{BLUE}Quest Accepted", "Source of Power Part 3", 10, 40, 20),
+    SOURCE_OF_POWER_COMPLETE : titles.create("{GREEN}Quest Complete", "Source of Power Complete. {GREEN}Good work.", 10, 80, 40)
 };
 
 /**
@@ -35,6 +55,10 @@ var _pvEvents = {
 };
 
 var _pvSpawns = {
+
+    mausoleum : {
+        WIZARD : "ancientWizard"
+    },
 
     powerCore : {
         // initial spawns
@@ -64,7 +88,7 @@ var _pvSubRegions = {
 var _bukkitEvents = {
     PLAYER_INTERACT: "org.bukkit.event.player.PlayerInteractEvent",
     BLOCK_PLACE : "org.bukkit.event.block.BlockPlaceEvent",
-    NPC_RIGHT_CLICK : "net.citizensnpcs.api.event.NPCRightClickEvent"
+    NPC_RIGHT_CLICK : "com.jcwhatever.nucleus.providers.npc.events.NpcRightClickEvent"
 };
 
 /**
@@ -86,66 +110,68 @@ var _material = {
 var _tasks = {
 
     research : {
-        RESEARCH_ACCEPTED : [_quests.SOURCE_OF_POWER_1.name, "Research", "Accepted"],
-        VOLCANO_ENTRANCE_DISCOVERY : [_quests.SOURCE_OF_POWER_1.name, "Research", "VolcanoEntranceDiscovery"],
-        RESEARCH_COMPLETE : [_quests.SOURCE_OF_POWER_1.name, "Research", "Complete"]
+        RESEARCH_ACCEPTED : { path: _quests.SOURCE_OF_POWER.PART_1.quest, task: ["Research", "Accepted"] },
+        VOLCANO_ENTRANCE_DISCOVERY : { path: _quests.SOURCE_OF_POWER.PART_1.quest, task: ["Research", "VolcanoEntranceDiscovery"] },
+        RESEARCH_COMPLETE : { path: _quests.SOURCE_OF_POWER.PART_1.quest, task: ["Research", "Complete"] }
     },
 
     teleportation : {
-        TALK_TO_WIZARD : [_quests.SOURCE_OF_POWER_1.name, "Teleportation", "TallkToWizard"],
-        PICKUP_SPELL : [_quests.SOURCE_OF_POWER_1.name, "Teleportation", "PickupSpell"]
+        TALK_TO_WIZARD : { path: _quests.SOURCE_OF_POWER.PART_1.quest, task: ["Teleportation", "TallkToWizard"] },
+        PICKUP_SPELL : { path: _quests.SOURCE_OF_POWER.PART_1.quest, task: ["Teleportation", "PickupSpell"] }
     },
 
     volcano : {
-        ZOMBIES : [_quests.SOURCE_OF_POWER_1.name, "Volcano", "Zombies"],
-        VISIT_LARGE_DOOR : [_quests.SOURCE_OF_POWER_1.name, "Volcano", "VisitLargeDoor"],
-        COMPLETE : [_quests.SOURCE_OF_POWER_1.name, "Volcano", "Complete"]
+        ZOMBIES : { path: _quests.SOURCE_OF_POWER.PART_1.quest, task: ["Volcano", "Zombies"] },
+        VISIT_LARGE_DOOR : { path: _quests.SOURCE_OF_POWER.PART_1.quest, task: ["Volcano", "VisitLargeDoor"] },
+        COMPLETE : { path: _quests.SOURCE_OF_POWER.PART_1.quest, task: ["Volcano", "Complete"] }
     },
 
     tellTheKing : {
-        TELL_SOMEONE : [_quests.SOURCE_OF_POWER_1.name, "TellTheKing", "TellSomeOne"],
-        TELL_THE_KING : [_quests.SOURCE_OF_POWER_1.name, "TellTheKing", "TellTheKing"],
-        PICKUP_ORDERS : [_quests.SOURCE_OF_POWER_1.name, "TellTheKing", "PickupOrders"]
+        TELL_SOMEONE : { path: _quests.SOURCE_OF_POWER.PART_1.quest, task: ["TellTheKing", "TellSomeOne"] },
+        TELL_THE_KING : { path: _quests.SOURCE_OF_POWER.PART_1.quest, task: ["TellTheKing", "TellTheKing"] },
+        PICKUP_ORDERS : { path: _quests.SOURCE_OF_POWER.PART_1.quest, task: ["TellTheKing", "PickupOrders"] }
     },
 
     wizardCouncil : {
-        ACCEPT_PART2 : [_quests.SOURCE_OF_POWER_2.name, "WizardCouncil", "AcceptPart2"],
-        ACCEPT_PART3 : [_quests.SOURCE_OF_POWER_3.name, "WizardCouncil", "AcceptPart3"]
+        ACCEPT_PART2 : { path: _quests.SOURCE_OF_POWER.name, task: ["WizardCouncil", "AcceptPart2"] },
+        ACCEPT_PART3 : { path: _quests.SOURCE_OF_POWER.name, task: ["WizardCouncil", "AcceptPart3"] }
     },
 
     wizardForest : {
-        GET_KEY : [_quests.SOURCE_OF_POWER_2.name, "WizardForest", "GetKey"],
-        PICKUP_LOG_BOOK : [_quests.SOURCE_OF_POWER_2.name, "WizardForest", "PickupLogBook"],
-        COMPLETE : [_quests.SOURCE_OF_POWER_2.name, "WizardForest", "Complete"],
+        GET_KEY : { path: _quests.SOURCE_OF_POWER.PART_2.quest, task: ["WizardForest", "GetKey"] },
+        PICKUP_LOG_BOOK : { path: _quests.SOURCE_OF_POWER.PART_2.quest, task: ["WizardForest", "PickupLogBook"] },
+        COMPLETE : { path: _quests.SOURCE_OF_POWER.PART_2.quest, task: ["WizardForest", "Complete"] },
 
-        NOT_A_SOUL_DOOR : [_quests.SOURCE_OF_POWER_2.name, "WizardForest", "NotASoulDoor"],
-        INSPECT_EXIT : [_quests.SOURCE_OF_POWER_2.name, "WizardForest", "InspectExit"],
-        KEY_NOT_WORKING : [_quests.SOURCE_OF_POWER_2.name, "WizardForest", "KeyNotWorking"],
-        WONDER : [_quests.SOURCE_OF_POWER_2.name, "WizardForest", "Wonder"],
-        INNER_DOOR_OPENED : [_quests.SOURCE_OF_POWER_2.name, "WizardForest", "InnerDoorOpened"],
-        EXIT_DOOR_OPENED : [_quests.SOURCE_OF_POWER_3.name, "WizardForest", "ExitDoorOpened"],
+        NOT_A_SOUL_DOOR : { path: _quests.SOURCE_OF_POWER.PART_2.quest, task: ["WizardForest", "NotASoulDoor"] },
+        INSPECT_EXIT : { path: _quests.SOURCE_OF_POWER.PART_2.quest, task: ["WizardForest", "InspectExit"] },
+        INSPECT_INNER_DOOR : { path: _quests.SOURCE_OF_POWER.PART_2.quest, task: ["WizardForest", "InspectInnerDoor"] },
+        KEY_NOT_WORKING : { path: _quests.SOURCE_OF_POWER.PART_2.quest, task: ["WizardForest", "KeyNotWorking"] },
+        WONDER : { path: _quests.SOURCE_OF_POWER.PART_2.quest, task: ["WizardForest", "Wonder"] },
+        INNER_DOOR_OPENED : { path: _quests.SOURCE_OF_POWER.PART_2.quest, task: ["WizardForest", "InnerDoorOpened"] },
+        EXIT_DOOR_OPENED : { path: _quests.SOURCE_OF_POWER.PART_2.quest, task: ["WizardForest", "ExitDoorOpened"] },
 
-        TALK_TO_COUNCIL : [_quests.SOURCE_OF_POWER_2.name, "WizardForest", "TalkToCouncil"]
+        TALK_TO_COUNCIL : { path: _quests.SOURCE_OF_POWER.PART_2.quest, task: ["WizardForest", "TalkToCouncil"] }
     },
 
     mausoleum : {
-        TALK_TO_ANCIENT_WIZARD : [_quests.SOURCE_OF_POWER_2.name, "Mausoleum", "TalkToAncientWizard"]
+        TALK_TO_ANCIENT_WIZARD : { path: _quests.SOURCE_OF_POWER.PART_2.quest, task: ["Mausoleum", "TalkToAncientWizard"] }
     },
 
     crypts : {
-        GET_KEY : [_quests.SOURCE_OF_POWER_2.name, "Crypts", "GetKey"],
-        EXIT_OPENED : [_quests.SOURCE_OF_POWER_2.name, "Crypts", "ExitOpened"],
-        VISIT_EXIT : [_quests.SOURCE_OF_POWER_2.name, "Crypts", "VisitExit"]
+        GET_KEY : { path: _quests.SOURCE_OF_POWER.PART_2.quest, task: ["Crypts", "GetKey"] },
+        EXIT_OPENED : { path: _quests.SOURCE_OF_POWER.PART_2.quest, task: ["Crypts", "ExitOpened"] },
+        VISIT_EXIT : { path: _quests.SOURCE_OF_POWER.PART_2.quest, task: ["Crypts", "VisitExit"] }
     },
 
     secretLibrary : {
-        GET_BOOK : [_quests.SOURCE_OF_POWER_2.name, "SecretLibrary", "GetBook"],
-        TALK_TO_COUNCIL : [_quests.SOURCE_OF_POWER_2.name, "SecretLibrary", "TalkToCouncil"]
+        GET_BOOK : { path: _quests.SOURCE_OF_POWER.PART_2.quest, task: ["SecretLibrary", "GetBook"] },
+        TALK_TO_COUNCIL : { path: _quests.SOURCE_OF_POWER.PART_2.quest, task: ["SecretLibrary", "TalkToCouncil"] }
     },
 
     caverns : {
-        PICKUP_KEY : [_quests.SOURCE_OF_POWER_3.name, "Caverns", "PickupKey"],
-        EXIT_OPENED : [_quests.SOURCE_OF_POWER_3.name, "Caverns", "ExitOpened"]
+        MAZE_OPENED : { path: _quests.SOURCE_OF_POWER.PART_3.quest, task: ["Caverns", "MazeOpened"] },
+        PICKUP_KEY : { path: _quests.SOURCE_OF_POWER.PART_3.quest, task: ["Caverns", "PickupKey"] },
+        EXIT_OPENED : { path: _quests.SOURCE_OF_POWER.PART_3.quest, task: ["Caverns", "ExitOpened"] }
     }
 };
 
@@ -214,6 +240,10 @@ var _regions = {
         INSPECT_LARGE_DOOR : "Volcano_InspectLargeDoor"
     },
 
+    mausoleum : {
+        WIZARD_TRIGGER : "Mausoleum_Wizard"
+    },
+
     // crypts arena
     crypts : {
         ENTRANCE : "Crypts_Entrance",
@@ -228,6 +258,8 @@ var _regions = {
     },
 
     caverns : {
+        MAZE_ENTRANCE_SWITCH : "Caverns_Maze_Door_Switch",
+        PUZZLE_ROOM : "Caverns_Puzzle_Room",
         CAVERN_EXIT : "AncientCavern_Exit"
     },
 
@@ -236,7 +268,12 @@ var _regions = {
         BOSS_INTRO_1 : "PowerCore_BossIntro1",
         BOSS_INTRO_2 : "PowerCore_BossIntro2",
         SECOND_DOOR : "PowerCore_SecondDoor",
-        THIRD_DOOR : "PowerCore_ThirdDoor"
+        THIRD_DOOR : "PowerCore_ThirdDoor",
+        LOWER_FLOOR : "SoP_PowerCore_LowerFloor",
+        BOSS_KILL : "SoP_PowerCore_BossKill1",
+        TP1 : "SoP_PowerCore_TP1",
+        TP2 : "SoP_PowerCore_TP2",
+        OUTRO : "SoP_Outro"
     }
 };
 
@@ -314,7 +351,9 @@ var _locations = {
         SWORD_REPAIR_1 : "PowerCore_SwordSlot1",
         SWORD_REPAIR_2 : "PowerCore_SwordSlot2",
         SWORD_REPAIR_3 : "PowerCore_SwordSlot3",
-        SWORD_REPAIR_4 : "PowerCore_SwordSlot4"
+        SWORD_REPAIR_4 : "PowerCore_SwordSlot4",
+        OUTRO_WIZARD : "SoP_Outro_Wizard",
+        UNDERWORLD_BOAT : "Underworld_Boat"
     }
 };
 
@@ -330,6 +369,7 @@ var _phantomRegions = {
     },
 
     caverns : {
+        MAZE_DOOR : "Caverns_Maze_Door",
         CAVERN_EXIT : "Caverns_Exit_Door"
     },
 
@@ -340,26 +380,31 @@ var _phantomRegions = {
 
 
 var _npcInfo = {
+    ANCIENT_WIZARD : {
+        name: "Ancient Wizard",
+        type: "PLAYER",
+        skin: "JCThePants",
+        kit : null,
+        health : 20
+    },
     powerCore : {
 
         BOSS : {
             name : "Evil Wizard",
             type : "PLAYER",
             skin : "JCThePants",
-            kit : "EvilWizard",
+            kit : "BossWizardEvil",
             health: 60
         },
 
         BOSS_HORSE : {
             name : "Skippy",
             type : "HORSE",
-            kit : "EvilWizardHorse",
+            kit : "HorseArmorDmd",
             health : 100
         }
     }
 };
-
-
 
 var _global = {
 
@@ -376,54 +421,63 @@ var _global = {
 
     character : {
         KING : {
+            uname: "King",
             name : "King",
             skin : "JCThePants",
             type : "PLAYER"
         },
 
         TELEPORT_WIZ : {
+            uname: "TeleportWiz",
             name : "Teleport Wiz",
             skin : "jcThomasj",
             type : "PLAYER"
         },
 
         WIZARD_COUNCIL_MEMBER_1 : {
+            uname : "CouncilMember1",
             name : "Council Member",
             skin : "jcThomasj",
             type : "PLAYER"
         },
 
         WIZARD_COUNCIL_MEMBER_2 : {
+            uname : "CouncilMember2",
             name : "Council Member",
             skin : "jcThomasj",
             type : "PLAYER"
         },
 
         WIZARD_COUNCIL_MEMBER_3 : {
+            uname : "CouncilMember3",
             name : "Council Member",
             skin : "jcThomasj",
             type : "PLAYER"
         },
 
         WIZARD_COUNCIL_MEMBER_4 : {
+            uname : "CouncilMember4",
             name : "Council Member",
             skin : "jcThomasj",
             type : "PLAYER"
         },
 
         WIZARD_COUNCIL_MEMBER_5 : {
+            uname : "CouncilMember5",
             name : "Council Member",
             skin : "jcThomasj",
             type : "PLAYER"
         },
 
         WIZARD_COUNCIL_MEMBER_6 : {
+            uname : "CouncilMember6",
             name : "Council Member",
             skin : "jcThomasj",
             type : "PLAYER"
         },
 
         WIZARD_COUNCIL_MEMBER_7 : {
+            uname : "CouncilMember7",
             name : "Council Member",
             skin : "jcThomasj",
             type : "PLAYER"

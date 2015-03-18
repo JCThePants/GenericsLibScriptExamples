@@ -58,9 +58,11 @@
         completeTask(player, _tasks.research.VOLCANO_ENTRANCE_DISCOVERY);
 
         talkSession(player, function (talk) {
-            talk.player(2, "This is strange.");
-            talk.player(3, "I wonder whats behind the door.");
-            talk.player(3, "It seems to be sealed with a very strong magic.");
+            talk
+                .player(2, "This is strange.")
+                .player(3, "I wonder whats behind the door.")
+                .player(3, "It seems to be sealed with a very strong magic.");
+
             if (status.samples != lavaSamples.length) {
                 talk.player(1, "I'll tell the researchers about it when I'm done collecting samples.");
             }
@@ -70,7 +72,7 @@
 
     // Util: Setup a lava sample pickup event handler
     function setupSamplePickup(sample, index) {
-        quests.items.onPickup(sample, function (player, item, isCancelled) {
+        quests.items.onPickup(sample, function (player) {
 
             var status = questStatus.getStatus(player.getUniqueId());
             if (status == null)
@@ -83,7 +85,7 @@
 
             status["sample" + index] = true;
 
-            phantom.entity.removeViewer(player, item.getEntity());
+            phantom.entity.removeViewer(player, sample.getEntity());
 
             status.samples++;
 
@@ -91,6 +93,9 @@
 
             if (status.samples == lavaSamples.length) {
                 msg.tell(player, "{GREEN}That should be enough samples.");
+
+                setObjective(player, _quests.SOURCE_OF_POWER.PART_1.quest, "RETURN_LAVA",
+                    "Take the lava samples from the volcano back to the researchers.");
             }
         });
     }
@@ -100,18 +105,17 @@
      */
     function getResearcherNPC(index) {
 
-        var npc = citizens.createNPC("Researcher", "VILLAGER");
-
-        var lookingTrait = npc.addTrait(citizensUtils.traits.LOOKING);
-        lookingTrait.setLookMode("LOOK_CLOSE");
-        lookingTrait.setEnabled(true);
+        var npc = npcs.create("Researcher" + index, "Researcher", "VILLAGER");
+        npc.getTraits().add("NpcTraitPack:Looking")
+            .lookClose();
 
         var location = quests.locations.get(_npcLocations[index]);
         npc.spawn(location);
 
         // Setup NPC RIGHT CLICK
-        citizens.on(npc, _global.npcEvents.RIGHT_CLICK, "NORMAL", function (event) {
-            var player = event.getClicker();
+        npc.onNpcRightClick(function (event) {
+
+            var player = event.getPlayer();
 
             // Do nothing if the quest has already been completed.
             if (isTaskComplete(player, _tasks.research.RESEARCH_COMPLETE)) {
@@ -128,11 +132,10 @@
                 var status = questStatus.getStatus(player.getUniqueId());
                 if (status) {
 
-
-
                     // player has not collected any samples
                     if (status.samples == 0) {
                         npcTalk(player, "Researcher", "Have you collected those samples yet?");
+                        showSamples(player, lavaSamples);
                     }
                     // player has not collected enough samples
                     else if (status.samples != lavaSamples.length) {
@@ -149,14 +152,23 @@
 
                             talkSession(player, function (talk) {
 
-                                talk.npc(2, "Researcher", "{GREEN}Thank you very much for your assistance.");
+                                talk
+                                    .npc(2, "Researcher", "{GREEN}Thank you very much for your assistance.")
 
-                                talk.player(3, "I discovered a strange doorway in the volcano...");
-                                talk.player(2, "But it was sealed with magic.");
+                                    .player(3, "I discovered a strange doorway in the volcano...")
+                                    .player(2, "But it was sealed with magic.")
 
-                                talk.npc(2, "Researcher", "Hmmmm...");
-                                talk.npc(3, "Researcher", "I've never heard of any doors beneath the volcano.");
-                                talk.npc(4, "Researcher", "{GREEN}Maybe you should find a wizard that specializes in teleportation.");
+                                    .npc(2, "Researcher", "Hmmmm...")
+                                    .npc(3, "Researcher", "I've never heard of any doors beneath the volcano.")
+                                    .npc(4, "Researcher", "{GREEN}Maybe you should find a wizard that specializes in teleportation.")
+
+                                    .execute(function () {
+
+                                        setObjective(player, _quests.SOURCE_OF_POWER.PART_1.quest, "FIND_TP_WIZ",
+                                            "Find a wizard that specializes in teleportation magic " +
+                                            "so you can enter the door beneath the volcano.");
+                                    });
+
 
                             });
 
@@ -168,6 +180,9 @@
 
                             // allow player to replay since the primary objective was not completed
                             clearTask(player, _tasks.research.RESEARCH_ACCEPTED);
+
+                            setObjective(player, _quests.SOURCE_OF_POWER.PART_1.quest, "RESEARCH_INCOMPLETE",
+                                "You didn't complete the hidden objective.");
                         }
 
                         questStatus.removeStatus(player.getUniqueId());
@@ -183,30 +198,41 @@
                 return;
             }
 
-            var talkResult = talkSession(player, function (talk) {
+            talkSession(player, function (talk) {
 
-                talk.npc(4, "Researcher", "We are researching this volcano. " +
-                "It is the source of Arborias magic and sustains life here.");
+                talk
+                    .npc(4, "Researcher", "We are researching this volcano.")
+                    .npc(6, "Researcher", "It is the source of Arborias magic and sustains life here.")
+                    .npc(4, "Researcher", "Unfortunately, the magic is dwindling...")
+                    .npc(4, "Researcher", "...which is why magic is being rationed.")
+                    .npc(4, "Researcher", "We've been tasked to research the volcano...")
+                    .npc(6, "Researcher", "...and discover how the magic is produced so that maybe we can fix it.")
 
-                talk.npc(4, "Researcher", "Unfortunately, the magic is dwindling which is why magic is being rationed.");
+                    .npc(4, "Researcher", "Right now we are collecting lava samples.")
+                    .npc(4, "Researcher", "We could use some help if you don't mind.")
 
-                talk.npc(5, "Researcher", "We've been tasked to research the volcano and discover how the magic is produced so that maybe we can fix it.");
+                    .execute(function () {
 
-                talk.npc(4, "Researcher", "Right now we are collecting lava samples. We could use some help if you don't mind.");
+                        queryQuest(player, _quests.SOURCE_OF_POWER.name, function () {
 
-            }).onFinish(function () {
-                quests.queryQuest(player, _quests.SOURCE_OF_POWER_1.name, function () {
+                            joinQuest(player, _quests.SOURCE_OF_POWER.PART_1.quest);
 
-                    showSamples(player, lavaSamples);
+                            showSamples(player, lavaSamples);
 
-                    questStatus.addStatus(player.getUniqueId()).samples = 0;
-                    completeTask(player, _tasks.research.RESEARCH_ACCEPTED);
+                            questStatus.addStatus(player.getUniqueId()).samples = 0;
+                            completeTask(player, _tasks.research.RESEARCH_ACCEPTED);
 
-                    msg.tell(player, "{GREEN}" + _quests.SOURCE_OF_POWER_1.display + " quest accepted.");
-                });
-            });
+                            _titles.SOURCE_OF_POWER_1_ACCEPT.showTo(player);
 
+                            msg.tell(player, "Source of Power Part 1 accepted.");
 
+                            setObjective(player, _quests.SOURCE_OF_POWER.PART_1.quest, "COLLECT_LAVA",
+                                "Collect lava samples inside the volcano for the researchers.")
+                        });
+
+                    });
+
+            })
         });
 
         return npc;

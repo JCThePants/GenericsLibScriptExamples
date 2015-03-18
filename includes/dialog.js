@@ -4,18 +4,11 @@
  * @param player   The player to show the chat message to.
  * @param npcName  The name of the NPC.
  * @param message  The message.
- * @param canSpam  Optional. Specify if spamming allowed. Default is false.
  */
-function npcTalk(player, npcName, message, canSpam) {
-
-    message = getNpcPrefix(npcName) + message;
-
-    if (canSpam) {
-        msg.tell(player, message);
-    }
-    else {
-        msg.tellNoSpam(player, 10 * 20, message);
-    }
+function npcTalk(player, npcName, message) {
+    talkSession(player, function (talk) {
+        talk.npc(4, npcName, message);
+    });
 }
 
 /**
@@ -24,18 +17,11 @@ function npcTalk(player, npcName, message, canSpam) {
  *
  * @param player   The player who is talking (and will see the message).
  * @param message  The message.
- * @param canSpam  Optional. Specify if spamming allowed. Default is false.
  */
-function playerTalk(player, message, canSpam) {
-
-    message = getPlayerPrefix(player) + message;
-
-    if (canSpam) {
-        msg.tell(player, message);
-    }
-    else {
-        msg.tellNoSpam(player, 10 * 20, message);
-    }
+function playerTalk(player, message) {
+    talkSession(player, function (talk) {
+        talk.player(4, message);
+    });
 }
 
 /**
@@ -46,7 +32,7 @@ function playerTalk(player, message, canSpam) {
  * @returns {string}
  */
 function getNpcPrefix(npcName) {
-    return "{YELLOW}<{WHITE}" + npcName + "{YELLOW}> {GRAY}";
+    return "{YELLOW}<" + npcName + "> {WHITE}";
 }
 
 /**
@@ -71,155 +57,214 @@ function getPlayerPrefix(player) {
  */
 function talkSession(player, callback, initialDelay) {
 
-    var totalDelay = (initialDelay || 0) * 20;
-    var totalTasks = 0;
-    var executedTasks = 0;
+    var players = isArray(player) ? player : [player];
 
-    var sessions = _questLib_internal.talkSessions;
-    var status = sessions.addStatus(player.getUniqueId());
+    var totalDelay = (initialDelay || 0) * 20;
     var onFinish = null;
     var isFinished = false;
 
-    status.isTalking = true;
+    var isPrimaryFinished = false;
+    var secondaryCount = 0;
 
-    // increment the number of tasks executed and
-    // end session if all tasks completed.
-    function incrementExecuted() {
-        executedTasks++;
-        if (executedTasks >= totalTasks) {
+    var transcripts = [];
+    var transcripters = [];
+    var actionBars = [];
+
+    var sessions = _questLib_internal.talkSessions;
+
+    for (var i=0; i < players.length; i++) {
+
+        var status = sessions.addStatus(players[i].getUniqueId());
+
+        if (status.isTalking) {
+            players.splice(i, 1);
+            i--;
+            continue;
+        }
+
+        transcripts[i] = new com.jcwhatever.nucleus.utils.text.dynamic.QueuedText();
+        transcripters[i] = transcripts[i].getBuilder();
+
+        status.isTalking = true;
+    }
+
+    function getEndTalkSession(playerIndex) {
+        return function () {
+
+            var player = players[playerIndex];
+            var actionBar = actionBars[playerIndex];
+
+            if (isPrimaryFinished) {
+                secondaryCount--;
+
+                if (secondaryCount != 0)
+                    return;
+            }
+
+            if (!actionBar)
+                return;
+
+            actionBar.hide(player);
+            actionBars[playerIndex] = null;
+            var status = sessions.addStatus(player.getUniqueId());
+            status.isTalking = false;
+
+            isFinished = true;
             if (onFinish) {
                 onFinish();
+                onFinish = null;
             }
-            status.isTalking = false;
-            isFinished = true;
         }
     }
 
-    // utility to display timed chat dialog.
-    function displayDialog(readTime, dialog) {
-        var isFinished = false;
-        var isStarted = false;
-        var onFinish;
-        var onStart;
 
-        if (totalDelay == 0) {
-            msg.tell(player, dialog);
-            isStarted = true;
-            scheduler.runTaskLater(readTime * 20, function () {
-                isFinished = true;
-                if (onFinish) {
-                    onFinish();
-                }
-                incrementExecuted();
-            })
-        }
-        else {
-            scheduler.runTaskLater(totalDelay, function () {
-                isStarted = true;
-                msg.tell(player, dialog);
+    if (players.length > 0) {
 
-                if (onStart) {
-                    onStart();
-                }
 
-                scheduler.runTaskLater(readTime * 20, function () {
-                    isFinished = true;
-                    if (onFinish) {
-                        onFinish();
+        // execute the provided callback and pass in an object
+        // with utility functions
+        var talk = {
+
+            /**
+             * NPC dialog.
+             *
+             * @param readTime  The amount of time it takes to read the dialog.
+             * @param npcName   The name of the NPC talking.
+             * @param dialog    The dialog to show in chat.
+             */
+            npc: function (readTime, npcName, dialog) {
+
+                dialog = isArray(dialog) ? dialog : [dialog];
+
+                for (var j = 0; j < dialog.length; j++) {
+                    for (var i = 0; i < players.length; i++) {
+                        transcripters[i].text(readTime * 20, getNpcPrefix(npcName) + dialog[j]);
+                        if (isPrimaryFinished) {
+                            transcripters[i].run(0, getEndTalkSession(i)).build();
+                            secondaryCount++;
+                        }
                     }
-                    incrementExecuted();
-                });
-            });
-        }
-
-        totalDelay += readTime * 20;
-
-        return {
-            onStart : function (callback) {
-                if (isStarted) {
-                    callback();
+                    totalDelay += readTime * 20;
                 }
-                else {
-                    onStart = callback;
-                }
+
+                return talk;
             },
-            onFinish : function (callback) {
-                if (isFinished) {
-                    callback();
-                } else {
-                    onFinish = callback;
+
+            /**
+             * Player dialog.
+             *
+             * @param readTime  The amount of time it takes to read the dialog.
+             * @param dialog    The dialog to show in chat.
+             *
+             * @returns {{ onStart : Function, onFinish : Function  }}
+             * Object with methods to attach onStart and onFinish callbacks.
+             */
+            player: function (readTime, dialog) {
+
+                dialog = isArray(dialog) ? dialog : [dialog];
+                for (var j = 0; j < dialog.length; j++) {
+                    for (var i = 0; i < players.length; i++) {
+                        transcripters[i].text(readTime * 20, getPlayerPrefix(players[i]) + dialog[j]);
+                        if (isPrimaryFinished) {
+                            transcripters[i].run(0, getEndTalkSession(i)).build();
+                            secondaryCount++;
+                        }
+                    }
+                    totalDelay += readTime * 20;
                 }
 
+                return talk;
+            },
+
+            /**
+             * Adds time to the total session, allowing the session to last
+             * longer than the calculated time without inserting a pause.
+             *
+             * <p>Does not work outside inside embedded functions called
+             * within the callback.</p>
+             *
+             * @param time  The time to add
+             */
+            padTime: function (time) {
+                totalDelay += time * 20;
+
+                return talk;
+            },
+
+            /**
+             * Pause the talk sessions for the specified amount of time.
+             *
+             * @param time  The amount of time to pause
+             */
+            pause: function (time) {
+                for (var i = 0; i < players.length; i++) {
+                    transcripters[i].pause(time * 20);
+                    if (isPrimaryFinished) {
+                        transcripters[i].run(0, getEndTalkSession(i)).build();
+                        secondaryCount++;
+                    }
+                }
+                totalDelay += time * 20;
+                if (isPrimaryFinished) {
+                    totalDelay += 1;
+                }
+                return talk;
+            },
+
+            /**
+             * Prematurely end the talk session. Call
+             * from within a function that is run in
+             * the talk session to cancel the rest of
+             * the dialog.
+             */
+            end: function () {
+
+                for (var i = 0; i < players.length; i++) {
+                    secondaryCount++;
+                    transcripters[i].run(0, getEndTalkSession(i)).build();
+                }
+                return talk;
+            },
+
+            /**
+             * Clear the players action bar text
+             */
+            clear : function() {
+                for (var i = 0; i < players.length; i++) {
+                    transcripters[i].text(1, "");
+                }
+                return talk;
+            },
+
+            /**
+             * Execute a function. Executes a function in sequence "Async".
+             *
+             * @param callback  The parameterless function to execute.
+             */
+            execute: function (callback) {
+                for (var i = 0; i < players.length; i++) {
+                    transcripters[i].run(5, callback);
+                    if (isPrimaryFinished) {
+                        transcripters[i].run(0, getEndTalkSession(i)).build();
+                        secondaryCount++;
+                    }
+                }
+                totalDelay += 5;
+                return talk;
             }
-        }
+        };
+
+        callback(talk);
     }
 
-    // execute the provided callback and pass in an object
-    // with utility functions
-    callback({
+    isPrimaryFinished = true;
 
-        /**
-         * NPC dialog.
-         *
-         * @param readTime  The amount of time it takes to read the dialog.
-         * @param npcName   The name of the NPC talking.
-         * @param dialog    The dialog to show in chat.
-         *
-         * @returns {{ onStart : Function, onFinish : Function  }}
-         * Object with methods to attach onStart and onFinish callbacks.
-         */
-        npc : function (readTime, npcName, dialog) {
-
-            dialog = getNpcPrefix(npcName) + dialog;
-            totalTasks++;
-
-            return displayDialog(readTime, dialog);
-
-        },
-
-        /**
-         * Player dialog.
-         *
-         * @param readTime  The amount of time it takes to read the dialog.
-         * @param dialog    The dialog to show in chat.
-         *
-         * @returns {{ onStart : Function, onFinish : Function  }}
-         * Object with methods to attach onStart and onFinish callbacks.
-         */
-        player : function (readTime, dialog) {
-            dialog = getPlayerPrefix(player) + dialog;
-            totalTasks++;
-
-            return displayDialog(readTime, dialog);
-        },
-
-        /**
-         * Adds time to the session "Async", that is, the time added does not compete
-         * with the dialog or execution of the session, but simply extends the minimum
-         * time of the session.
-         *
-         * @param time  The time to add
-         */
-        padTime : function (time) {
-            totalTasks++;
-            scheduler.runTaskLater(totalDelay + (time * 20), function () {
-                incrementExecuted();
-            });
-        },
-
-        /**
-         * Execute a function. Executes a function in sequence "Async".
-         *
-         * @param callback  The parameterless function to execute.
-         */
-        execute : function (callback) {
-            totalTasks++;
-            scheduler.runTaskLater(totalDelay, function () {
-                callback();
-                incrementExecuted();
-            });
+    function end() {
+        for (var i = 0; i < players.length; i++) {
+            secondaryCount++;
+            getEndTalkSession(i)();
         }
-    });
+    }
 
     var result = {
         totalDelay : totalDelay,
@@ -230,8 +275,28 @@ function talkSession(player, callback, initialDelay) {
             else {
                 onFinish = callback;
             }
+        },
+        cancel : function () {
+            end();
         }
     };
+
+
+
+    for (var i=0; i < players.length; i++) {
+        var p = players[i];
+
+        actionBars[i] = actionbars.createPersistent(transcripts[i]);
+        actionBars[i].show(p);
+        transcripters[i].build();
+    }
+
+    if (players.length > 0) {
+        // on finish
+        scheduler.runTaskLater(totalDelay + 15, function () {
+            end();
+        });
+    }
 
     // reset total delay in case more talk is added
     // inside a callback function.
@@ -253,73 +318,6 @@ function isTalking(player) {
     var status = sessions.addStatus(player.getUniqueId());
 
     return status.isTalking === true;
-}
-
-/**
- * Plays back random responses and tracks which npc used which response.
- *
- * @param responses  An array of responses
- * @constructor
- */
-function DialogTracker (responses) {
-
-    var npcTalkTracker = new StatusTracker();
-
-    this.respond = function (player, npc) {
-        var dialog = arrayPick(responses);
-
-        showResponse(npc, player, dialog);
-    };
-
-    this.respondOnce = function (player, npc) {
-        var dialog = getNPCDialog(npc, player, responses);
-
-        showResponse(npc, player, dialog);
-    };
-
-    this.clear = function (player) {
-        npcTalkTracker.removeStatus(player);
-    };
-
-    this.clearAll = function() {
-        npcTalkTracker = new StatusTracker();
-    };
-
-    function getNPCDialog(npc, player, responses) {
-        var status = npcTalkTracker.addStatus(player.getUniqueId());
-
-        if (!status.dialogs) {
-            status.dialogs = new JSMap();
-        }
-
-        var dialog = status.dialogs.get(npc);
-        if (!dialog) {
-            dialog = arrayPick(responses);
-            status.dialogs.put(npc, dialog);
-        }
-        else {
-            return "You said that already.";
-        }
-
-        return dialog;
-    }
-
-    function showResponse(npc, player, dialog) {
-
-        if (isString(dialog)) {
-            talkSession(player, function (talk) {
-                talk.npc(0, npc.getName(), m);
-            }, 2);
-        }
-        else {
-            talkSession(player, function (talk) {
-                for (var i = 0; i < dialog.length; i++) {
-                    var m = dialog[i];
-                    talk.npc(i < dialog.length - 1 ? 3 : 0, npc.getName(), m);
-                }
-            }, 2);
-        }
-    }
 }
 
 

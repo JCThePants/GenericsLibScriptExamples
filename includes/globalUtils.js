@@ -16,6 +16,28 @@ function isEqual(obj1, obj2) {
 }
 
 /**
+ * Determine if an object is an array.
+ *
+ * @param obj  The object to check.
+ *
+ * @returns {boolean}
+ */
+function isArray(obj) {
+    return obj && Object.prototype.toString.call(obj) === '[object Array]';
+}
+
+/**
+ * Determine if an object is a function.
+ *
+ * @param obj  The object to check.
+ *
+ * @returns {boolean}
+ */
+function isFunction(obj) {
+    return obj && Object.prototype.toString.call(obj) === '[object Function]';
+}
+
+/**
  * Determine if an object is a Java object.
  *
  * @returns {boolean}
@@ -53,9 +75,7 @@ function arrayPick(array) {
  * @returns {boolean}
  */
 function isString(obj) {
-    return typeof obj === "string" ||
-        (isJavaObject(obj) &&
-        obj.getClass().getName().equals("java.lang.String"));
+    return typeof obj == "string" || obj instanceof java.lang.String;
 }
 
 /**
@@ -66,6 +86,25 @@ Array.prototype.toList = function () {
 
     for (var i=0; i < this.length; i++) {
         list.add(this[i]);
+    }
+
+    return list;
+};
+
+Array.prototype.toRandomList = function () {
+    var list = new java.util.ArrayList(this.length);
+
+    if (this.length < 2)
+        return this.toList();
+
+    var temp = [];
+    for (var i=0; i < this.length; i++) {
+        temp.push(this[i]);
+    }
+
+    while (temp.length > 1) {
+        var index = rand.getIntMax(temp.length - 1);
+        list.add(temp.splice(index, 1)[0]);
     }
 
     return list;
